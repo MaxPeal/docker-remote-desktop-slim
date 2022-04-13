@@ -80,7 +80,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       -
-        name: Build and push
+        name: Build and prep ccache
         id: docker_build
         uses: docker/build-push-action@v2
         env:
@@ -92,11 +92,13 @@ jobs:
           platforms:
             linux/amd64,
             linux/arm64
-          push: ${{ github.event_name != 'pull_request' }}
+          push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
       - 
         name: Push Docker image to GitHub Container Registry (GHCR)
+        if: github.event_name != 'pull_request'
+        #${{ github.event_name != 'pull_request' }}
         uses: nick-invision/retry@v2.6.0
         with:
           timeout_minutes: 30
@@ -107,6 +109,7 @@ jobs:
             docker push ghcr.io/${{ steps.env_fix.outputs.repo_name_lc }}:${{ github.event.inputs.tags }}
       -
         name: Push Docker image to Docker Hub
+        if: github.event_name != 'pull_request'
         uses: nick-invision/retry@v2.6.0
         with:
           timeout_minutes: 30
@@ -117,6 +120,7 @@ jobs:
             docker push ${{ steps.env_fix.outputs.repo_name_lc }}:${{ github.event.inputs.tags }}
       -
         name: Update repo description
+        if: github.event_name != 'pull_request'
         uses: peter-evans/dockerhub-description@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
