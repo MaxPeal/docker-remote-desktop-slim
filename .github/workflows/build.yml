@@ -60,7 +60,10 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3
         with:
-          images: ${{ steps.env_fix.outputs.owner_name_lc }}/${{ steps.env_fix.outputs.app_name }},ghcr.io/${{ steps.env_fix.outputs.owner_name_lc }}/${{ steps.env_fix.outputs.app_name }}
+          images: |
+            ${{ steps.env_fix.outputs.owner_name_lc }}/${{ steps.env_fix.outputs.app_name }},
+            ghcr.io/${{ steps.env_fix.outputs.repo_name_lc }},
+            registry.gitlab.com/${{ steps.env_fix.outputs.repo_name_lc }}
           tags: |
             latest
             ubuntu-${{ steps.env_ubuntu.outputs.ubuntu_codename }}
@@ -79,6 +82,14 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - 
+        name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.CR_PAT }}
+          # password: ${{ secrets.GITHUB_TOKEN }}
       -
         name: Build and push ccache
         if: github.event_name != 'pull_request'
@@ -100,8 +111,9 @@ jobs:
             linux/arm64
           push: false
           tags: |
-            ${{ steps.env_fix.outputs.repo_name_lc }}:build-cache
-            ghcr.io/${{ steps.env_fix.outputs.repo_name_lc }}:build-cache
+            ${{ steps.env_fix.outputs.repo_name_lc }}:build-cache,
+            ghcr.io/${{ steps.env_fix.outputs.repo_name_lc }}:build-cache,
+            registry.gitlab.com/${{ steps.env_fix.outputs.repo_name_lc }}:build-cache
           labels: ${{ steps.meta.outputs.labels }}
       - 
         name: Push ccache Docker image to GitHub Container Registry (GHCR)
