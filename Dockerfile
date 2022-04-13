@@ -27,7 +27,7 @@ RUN echo 'PATH=/usr/lib/ccache:$PATH ; export PATH' >> /etc/profile && echo 'PAT
     && echo 'max_size 2G' >> /etc/ccache.conf \
     && echo 'compression true' >> /etc/ccache.conf \
     && echo 'compression_level 3' >> /etc/ccache.conf \
-    && echo '#find $CCACHE_DIR -type d | xargs chmod g+s
+    && echo '#find $CCACHE_DIR -type d | xargs chmod g+s' >> /etc/ccache.conf
 
 #ARG REPO_NAME_LC=REPO_NAME_LC
 COPY --from=$REPO_NAME_LC:build-cache /ccache/ /ccache/
