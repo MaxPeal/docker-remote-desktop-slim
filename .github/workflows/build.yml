@@ -1,6 +1,7 @@
 name: build
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
@@ -20,9 +21,40 @@ jobs:
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
+
+      - name: Generate temporary tag name
+        shell: bash
+        run: |
+          test_tag=$(date +%Y%m%d%H%M%S)
+          echo "[debug] Generated test tag name is '${test_tag}'"
+          echo "::set-output name=test_tag::$test_tag"
+        id: generate_temporary_tag_name
+      - name: Env Fix LowerCase GITHUB_REPOSITORY repo_name_lc
+        shell: bash
+        run: |
+          repo_name_lc=$(echo "${GITHUB_REPOSITORY}" | tr '[A-Z]' '[a-z]')
+          echo "[debug] Generated repo name lc is '${repo_name_lc}'"
+          echo "::set-output name=repo_name_lc::$repo_name_lc"
+          project_name_lc=$(echo "${GITHUB_REPOSITORY}" | tr '[A-Z]' '[a-z]' | sed -e 's/^.*\///')
+          echo "[debug] Generated project_name_lc is '${project_name_lc}'"
+          echo "::set-output name=project_name_lc::$project_name_lc"
+          owner_name_lc=$(echo "${GITHUB_REPOSITORY}" | tr '[A-Z]' '[a-z]' | sed -e 's/\/.*$//')
+          echo "[debug] Generated owner_name_lc is '${owner_name_lc}'"
+          echo "::set-output name=owner_name_lc::$owner_name_lc"
+          app_name=$(echo "${GITHUB_REPOSITORY}" | grep -P -o -m 1 '(?<=/docker-).*')
+          echo "[debug] Generated app name is '${app_name}'"
+          echo "::set-output name=app_name::$app_name"
+        id: env_fix
+      -
+        name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${GITHUB_REPOSITORY}
       -
         name: Login to DockerHub
         uses: docker/login-action@v1
+        if: github.event_name != 'pull_request'
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -39,15 +71,38 @@ jobs:
           platforms:
             linux/amd64,
             linux/arm64
-          push: true
-          tags:
-            scottyhardy/docker-remote-desktop:latest,
-            scottyhardy/docker-remote-desktop:ubuntu-${{ env.ubuntu_codename }},
-            scottyhardy/docker-remote-desktop:ubuntu-${{ env.ubuntu_version }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}:latest,
+            ${{ steps.meta.outputs.tags }}:ubuntu-${{ env.ubuntu_codename }},
+            ${{ steps.meta.outputs.tags }}:ubuntu-${{ env.ubuntu_version }},
+            ghcr.io/${{ steps.env_fix.outputs.repo_name_lc }}:${{ steps.generate_temporary_tag_name.outputs.test_tag }},
+            ghcr.io/${{ steps.env_fix.outputs.repo_name_lc }}:${{ github.event.inputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+      - 
+        name: Push Docker image to GitHub Container Registry (GHCR)
+        uses: nick-invision/retry@v2.6.0
+        with:
+          timeout_minutes: 30
+          max_attempts: 1
+          # max_attempts: 3
+          retry_wait_seconds: 120
+          command: |
+            docker push ghcr.io/${{ steps.env_fix.outputs.repo_name_lc }}:${{ github.event.inputs.tags }}
+      -
+        name: Push Docker image to Docker Hub
+        uses: nick-invision/retry@v2.6.0
+        with:
+          timeout_minutes: 30
+          max_attempts: 1
+          # max_attempts: 3
+          retry_wait_seconds: 120
+          command: |
+            docker push ${{ steps.env_fix.outputs.repo_name_lc }}:${{ github.event.inputs.tags }}
       -
         name: Update repo description
         uses: peter-evans/dockerhub-description@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
-          repository: scottyhardy/docker-remote-desktop
+          # repository: ${{ steps.env_fix.outputs.repo_name_lc }}
+          repository: ${{ steps.env_fix.outputs.owner_name_lc }}/${{ steps.env_fix.outputs.project_name_lc }}
