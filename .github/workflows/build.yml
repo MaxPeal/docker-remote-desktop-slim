@@ -11,6 +11,8 @@ on:
 jobs:
   docker:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
     steps:
       -
         name: Checkout
@@ -109,12 +111,23 @@ jobs:
           platforms:
             linux/amd64,
             linux/arm64
-          push: true
-          tags: |
+          push: false
+          tags: 
             ${{ steps.env_fix.outputs.repo_name_lc }}:build-cache,
             ghcr.io/${{ steps.env_fix.outputs.repo_name_lc }}:build-cache,
             registry.gitlab.com/${{ steps.env_fix.outputs.repo_name_lc }}:build-cache
           labels: ${{ steps.meta.outputs.labels }}
+      -
+        name: Push ccache Docker image to Docker Hub
+        if: github.event_name != 'pull_request'
+        uses: nick-invision/retry@v2.6.0
+        with:
+          timeout_minutes: 30
+          max_attempts: 1
+          # max_attempts: 3
+          retry_wait_seconds: 120
+          command: |
+            docker push ${{ steps.env_fix.outputs.repo_name_lc }}:build-cache
       - 
         name: Push ccache Docker image to GitHub Container Registry (GHCR)
         if: github.event_name != 'pull_request'
@@ -127,17 +140,6 @@ jobs:
           retry_wait_seconds: 120
           command: |
             docker push ghcr.io/${{ steps.env_fix.outputs.repo_name_lc }}:build-cache
-      -
-        name: Push ccache Docker image to Docker Hub
-        if: github.event_name != 'pull_request'
-        uses: nick-invision/retry@v2.6.0
-        with:
-          timeout_minutes: 30
-          max_attempts: 1
-          # max_attempts: 3
-          retry_wait_seconds: 120
-          command: |
-            docker push ${{ steps.env_fix.outputs.repo_name_lc }}:build-cache
       -
         name: Build and prep ccache
         id: docker_build
