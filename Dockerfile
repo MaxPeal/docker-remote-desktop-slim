@@ -3,6 +3,11 @@
 
 ARG REPO_NAME_LC=REPO_NAME_LC
 ARG TAG=latest
+#ARG API_BACKEND_CONTAINER="api:backend"
+#ARG API_STATIC_DIR="/var/www/static"
+#FROM  $API_BACKEND_CONTAINER as source
+#FROM $REPO_NAME_LC:build-cache as build-cache-source
+
 FROM ubuntu:$TAG as builder
 
 RUN sed -i -E 's/^# deb-src /deb-src /g' /etc/apt/sources.list \
@@ -30,7 +35,11 @@ RUN echo 'PATH=/usr/lib/ccache:$PATH ; export PATH' >> /etc/profile && echo 'PAT
     && echo '#find $CCACHE_DIR -type d | xargs chmod g+s' >> /etc/ccache.conf
 
 #ARG REPO_NAME_LC=REPO_NAME_LC
-COPY --from=$REPO_NAME_LC:build-cache /ccache/ /ccache/
+# see https://github.com/docker/buildx/blob/master/docs/reference/buildx_build.md#cache-from
+# and https://github.com/moby/moby/issues/34482#issuecomment-454716952
+FROM $REPO_NAME_LC:build-cache as build-cache-source
+FROM scratch
+COPY --from=build-cache-source /ccache/ /ccache/
 
 RUN cd /pulseaudio-$(pulseaudio --version | awk '{print $2}') \
     && ./configure
