@@ -80,6 +80,51 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       -
+        name: Build and push ccache
+        if: github.event_name != 'pull_request'
+        id: docker_build-cache
+        uses: docker/build-push-action@v2
+        env:
+          ubuntu_codename: ${{ steps.env_ubuntu.outputs.ubuntu_codename }}
+          ubuntu_version: ${{ steps.env_ubuntu.outputs.ubuntu_version }}
+        with:
+          target: build-cache
+          build-args: |
+            REPO_NAME_LC=${{ steps.env_fix.outputs.repo_name_lc }}
+            OWNER_NAME_LC=${{ steps.env_fix.outputs.owner_name_lc }}
+            PROJECT_NAME_LC=${{ steps.env_fix.outputs.project_name_lc }}
+            APP_NAME=${{ steps.env_fix.outputs.app_name }}
+            TAG=${{ steps.env_fix.outputs.repo_name_lc }}:build-cache
+          platforms:
+            linux/amd64,
+            linux/arm64
+          push: false
+          tags: ${{ steps.env_fix.outputs.repo_name_lc }}:build-cache
+          labels: ${{ steps.meta.outputs.labels }}
+      - 
+        name: Push ccache Docker image to GitHub Container Registry (GHCR)
+        if: github.event_name != 'pull_request'
+        #${{ github.event_name != 'pull_request' }}
+        uses: nick-invision/retry@v2.6.0
+        with:
+          timeout_minutes: 30
+          max_attempts: 1
+          # max_attempts: 3
+          retry_wait_seconds: 120
+          command: |
+            docker push ghcr.io/${{ steps.env_fix.outputs.repo_name_lc }}:build-cache
+      -
+        name: Push ccache Docker image to Docker Hub
+        if: github.event_name != 'pull_request'
+        uses: nick-invision/retry@v2.6.0
+        with:
+          timeout_minutes: 30
+          max_attempts: 1
+          # max_attempts: 3
+          retry_wait_seconds: 120
+          command: |
+            docker push ${{ steps.env_fix.outputs.repo_name_lc }}:build-cache
+      -
         name: Build and prep ccache
         id: docker_build
         uses: docker/build-push-action@v2
