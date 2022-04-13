@@ -51,10 +51,11 @@ jobs:
         uses: docker/metadata-action@v3
         with:
           images: ${{ steps.env_fix.outputs.owner_name_lc }}/${{ steps.env_fix.outputs.app_name }},ghcr.io/${{ steps.env_fix.outputs.owner_name_lc }}/${{ steps.env_fix.outputs.app_name }}
-          tags: ${{ steps.env_fix.outputs.owner_name_lc }}/${{ steps.env_fix.outputs.app_name }}:latest,
-            ${{ steps.meta.outputs.tags }}:ubuntu-${{ env.ubuntu_codename }},
-            ${{ steps.meta.outputs.tags }}:ubuntu-${{ env.ubuntu_version }},
-            ghcr.io/${{ steps.env_fix.outputs.repo_name_lc }}:${{ steps.generate_temporary_tag_name.outputs.test_tag }},
+          tags: |
+            ${{ steps.env_fix.outputs.owner_name_lc }}/${{ steps.env_fix.outputs.app_name }}:latest
+            ${{ steps.meta.outputs.tags }}:ubuntu-${{ env.ubuntu_codename }}
+            ${{ steps.meta.outputs.tags }}:ubuntu-${{ env.ubuntu_version }}
+            ghcr.io/${{ steps.env_fix.outputs.repo_name_lc }}:${{ steps.generate_temporary_tag_name.outputs.test_tag }}
             ghcr.io/${{ steps.env_fix.outputs.repo_name_lc }}:${{ github.event.inputs.tags }}
       -
         name: Login to DockerHub
