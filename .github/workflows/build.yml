@@ -50,7 +50,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3
         with:
-          images: ${{ steps.env_fix.outputs.repo_name_lc }}/${{ steps.env_fix.outputs.app_name }}
+          images: ${{ steps.env_fix.outputs.owner_name_lc }}/${{ steps.env_fix.outputs.app_name }},ghcr.io/${{ steps.env_fix.outputs.owner_name_lc }}/${{ steps.env_fix.outputs.app_name }}
       -
         name: Login to DockerHub
         uses: docker/login-action@v1
