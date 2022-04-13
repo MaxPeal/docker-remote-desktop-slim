@@ -45,6 +45,16 @@ jobs:
           echo "[debug] Generated app name is '${app_name}'"
           echo "::set-output name=app_name::$app_name"
         id: env_fix
+      - name: Env ubuntu_codename ubuntu_version
+        shell: bash
+        run: |
+          ubuntu_codename=$(echo "focal")
+          echo "[debug] Generated ubuntu_codename is '${ubuntu_codename}'"
+          echo "::set-output name=ubuntu_codename::$ubuntu_codename"
+          ubuntu_version=$(echo "20.04")
+          echo "[debug] Generated ubuntu_version is '${ubuntu_version}'"
+          echo "::set-output name=ubuntu_version::$ubuntu_version"
+        id: env_ubuntu
       -
         name: Docker meta
         id: meta
@@ -53,8 +63,8 @@ jobs:
           images: ${{ steps.env_fix.outputs.owner_name_lc }}/${{ steps.env_fix.outputs.app_name }},ghcr.io/${{ steps.env_fix.outputs.owner_name_lc }}/${{ steps.env_fix.outputs.app_name }}
           tags: |
             ${{ steps.env_fix.outputs.owner_name_lc }}/${{ steps.env_fix.outputs.app_name }}:latest
-            ${{ steps.meta.outputs.tags }}:ubuntu-${{ env.ubuntu_codename }}
-            ${{ steps.meta.outputs.tags }}:ubuntu-${{ env.ubuntu_version }}
+            ${{ steps.env_fix.outputs.owner_name_lc }}/${{ steps.env_fix.outputs.app_name }}:ubuntu-${{ steps.env_ubuntu.outputs.ubuntu_codename }}
+            ${{ steps.env_fix.outputs.owner_name_lc }}/${{ steps.env_fix.outputs.app_name }}:ubuntu-${{ steps.env_ubuntu.outputs.ubuntu_version }}
             ghcr.io/${{ steps.env_fix.outputs.repo_name_lc }}:${{ steps.generate_temporary_tag_name.outputs.test_tag }}
             ghcr.io/${{ steps.env_fix.outputs.repo_name_lc }}:${{ github.event.inputs.tags }}
       -
@@ -69,11 +79,11 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v2
         env:
-          ubuntu_codename: focal
-          ubuntu_version: 20.04
+          ubuntu_codename: ${{ steps.env_ubuntu.outputs.ubuntu_codename }}
+          ubuntu_version: ${{ steps.env_ubuntu.outputs.ubuntu_version }}
         with:
           build-args: |
-            TAG=${{ env.ubuntu_codename }}
+            TAG=${{ steps.env_ubuntu.outputs.ubuntu_codename }}
           platforms:
             linux/amd64,
             linux/arm64
