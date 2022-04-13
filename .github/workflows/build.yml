@@ -94,7 +94,7 @@ jobs:
             OWNER_NAME_LC=${{ steps.env_fix.outputs.owner_name_lc }}
             PROJECT_NAME_LC=${{ steps.env_fix.outputs.project_name_lc }}
             APP_NAME=${{ steps.env_fix.outputs.app_name }}
-            TAG=${{ steps.env_fix.outputs.repo_name_lc }}:build-cache
+            TAG=${{ steps.env_ubuntu.outputs.ubuntu_codename }}
           platforms:
             linux/amd64,
             linux/arm64
