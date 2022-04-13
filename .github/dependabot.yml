@@ -1,0 +1,14 @@
+---
+version: 2
+updates:
+  # https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file#package-ecosystem
+  # Maintain dependencies for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+  # Maintain dependencies for Docker
+  - package-ecosystem: docker
+    directory: "/"
+    schedule:
+      interval: daily
