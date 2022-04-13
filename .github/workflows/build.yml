@@ -99,7 +99,9 @@ jobs:
             linux/amd64,
             linux/arm64
           push: false
-          tags: ${{ steps.env_fix.outputs.repo_name_lc }}:build-cache
+          tags: |
+            ${{ steps.env_fix.outputs.repo_name_lc }}:build-cache
+            ghcr.io/${{ steps.env_fix.outputs.repo_name_lc }}:build-cache
           labels: ${{ steps.meta.outputs.labels }}
       - 
         name: Push ccache Docker image to GitHub Container Registry (GHCR)
