@@ -24,7 +24,7 @@ RUN sed -i -E 's/^# deb-src /deb-src /g' /etc/apt/sources.list \
     && rm -rf /var/lib/apt/lists/*
 
 RUN echo 'PATH=/usr/lib/ccache:$PATH ; export PATH' >> /etc/profile && echo 'PATH=/usr/lib/ccache:$PATH ; export PATH' >> /etc/profile.d/ccache.sh \
-    && $(cd /usr/local/bin && ln -s /usr/lib/ccache/* . ) \ 
+    && $(cd /usr/local/bin && ln -s /usr/lib/ccache/* . ) \
     && echo '# CCACHE_DIR' >> /etc/ccache.conf \
     && echo 'cache_dir /ccache' >> /etc/ccache.conf \
     && echo 'hard_link false' >> /etc/ccache.conf \
@@ -32,7 +32,9 @@ RUN echo 'PATH=/usr/lib/ccache:$PATH ; export PATH' >> /etc/profile && echo 'PAT
     && echo 'max_size 2G' >> /etc/ccache.conf \
     && echo 'compression true' >> /etc/ccache.conf \
     && echo 'compression_level 3' >> /etc/ccache.conf \
-    && echo '#find $CCACHE_DIR -type d | xargs chmod g+s' >> /etc/ccache.conf
+    && echo '#find $CCACHE_DIR -type d | xargs chmod g+s' >> /etc/ccache.conf \
+    && mkdir -p /ccache \
+    && find /ccache -type d | xargs chmod g+s
 
 #ARG REPO_NAME_LC=REPO_NAME_LC
 # see https://github.com/docker/buildx/blob/master/docs/reference/buildx_build.md#cache-from
