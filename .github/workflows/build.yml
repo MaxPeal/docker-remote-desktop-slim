@@ -109,7 +109,7 @@ jobs:
           platforms:
             linux/amd64,
             linux/arm64
-          push: false
+          push: true
           tags: |
             ${{ steps.env_fix.outputs.repo_name_lc }}:build-cache,
             ghcr.io/${{ steps.env_fix.outputs.repo_name_lc }}:build-cache,
