@@ -112,11 +112,10 @@ jobs:
             linux/amd64,
             linux/arm64
           push: false
-          tags: 
-            ${{ steps.env_fix.outputs.project_name_lc }}:build-cache,
-            ${{ steps.env_fix.outputs.owner_name_lc }}/${{ steps.env_fix.outputs.project_name_lc }}:build-cache,
-            ${{ steps.env_fix.outputs.repo_name_lc }}:build-cache,
-            ghcr.io/${{ steps.env_fix.outputs.repo_name_lc }}:build-cache,
+          tags: |
+            ${{ steps.env_fix.outputs.owner_name_lc }}/${{ steps.env_fix.outputs.project_name_lc }}:build-cache
+            ${{ steps.env_fix.outputs.repo_name_lc }}:build-cache
+            ghcr.io/${{ steps.env_fix.outputs.repo_name_lc }}:build-cache
             registry.gitlab.com/${{ steps.env_fix.outputs.repo_name_lc }}:build-cache
           labels: ${{ steps.meta.outputs.labels }}
       -
