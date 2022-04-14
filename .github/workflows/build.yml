@@ -31,6 +31,14 @@ jobs:
           echo "[debug] Generated test tag name is '${test_tag}'"
           echo "::set-output name=test_tag::$test_tag"
         id: generate_temporary_tag_name
+      - name: Env Fix for repository name must be lowercase
+            # fix error: failed to solve: invalid reference format: repository name must be lowercase
+            # see https://github.com/docker/build-push-action/blob/9472e9021074a3cb3279ba431598b8836d40433f/TROUBLESHOOTING.md
+        uses: actions/github-script@v4
+        id: repo_toLowerCase
+        with:
+          result-encoding: string
+          script: return 'ghcr.io/${{ github.repository }}'.toLowerCase()            
       - name: Env Fix LowerCase GITHUB_REPOSITORY repo_name_lc
         shell: bash
         run: |
@@ -96,6 +104,7 @@ jobs:
           target: build-cache
           build-args: |
             REPO_NAME_LC=${{ steps.env_fix.outputs.repo_name_lc }}
+            repo_toLowerCase=${{ steps.repo_toLowerCase.outputs.result }}
             OWNER_NAME_LC=${{ steps.env_fix.outputs.owner_name_lc }}
             PROJECT_NAME_LC=${{ steps.env_fix.outputs.project_name_lc }}
             APP_NAME=${{ steps.env_fix.outputs.app_name }}
@@ -104,8 +113,10 @@ jobs:
             linux/amd64,
             linux/arm64
           push: true
-          tags:
-            ghcr.io/${{ steps.env_fix.outputs.repo_name_lc }}:build-cache
+          context: .
+          tags: ${{ steps.repo_toLowerCase.outputs.result }}:build-cache
+#          tags:
+#            ghcr.io/${{ steps.env_fix.outputs.repo_name_lc }}:build-cache
 #          tags:
 #            ${{ steps.env_fix.outputs.owner_name_lc }}/${{ steps.env_fix.outputs.project_name_lc }}:build-cache,
 #            ${{ steps.env_fix.outputs.repo_name_lc }}:build-cache,
