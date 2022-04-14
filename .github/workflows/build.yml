@@ -104,6 +104,7 @@ jobs:
             linux/amd64,
             linux/arm64
           push: false
+          load: true
           tags: |
             ${{ steps.env_fix.outputs.owner_name_lc }}/${{ steps.env_fix.outputs.project_name_lc }}:build-cache
             ${{ steps.env_fix.outputs.repo_name_lc }}:build-cache
