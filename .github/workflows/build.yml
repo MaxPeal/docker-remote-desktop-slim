@@ -34,7 +34,7 @@ jobs:
       - name: Env Fix for repository name must be lowercase
             # fix error: failed to solve: invalid reference format: repository name must be lowercase
             # see https://github.com/docker/build-push-action/blob/9472e9021074a3cb3279ba431598b8836d40433f/TROUBLESHOOTING.md
-        uses: actions/github-script@v4
+        uses: actions/github-script@v6
         id: repo_toLowerCase
         with:
           result-encoding: string
