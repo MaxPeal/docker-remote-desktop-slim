@@ -38,7 +38,8 @@ jobs:
         id: repo_toLowerCase
         with:
           result-encoding: string
-          script: return 'ghcr.io/${{ github.repository }}'.toLowerCase()            
+          #script: return 'ghcr.io/${{ github.repository }}'.toLowerCase()
+          script: return '${{ github.repository }}'.toLowerCase()
       - name: Env Fix LowerCase GITHUB_REPOSITORY repo_name_lc
         shell: bash
         run: |
@@ -114,7 +115,10 @@ jobs:
             linux/arm64
           push: true
           context: .
-          tags: ${{ steps.repo_toLowerCase.outputs.result }}:build-cache
+          #tags: ${{ steps.repo_toLowerCase.outputs.result }}:build-cache
+          tags:
+            ${{ steps.repo_toLowerCase.outputs.result }}:build-cache
+            ghcr.io/${{ steps.repo_toLowerCase.outputs.result }}:build-cache
 #          tags:
 #            ghcr.io/${{ steps.env_fix.outputs.repo_name_lc }}:build-cache
 #          tags:
