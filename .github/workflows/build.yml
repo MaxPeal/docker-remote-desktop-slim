@@ -72,6 +72,18 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.CR_PAT }}
           # password: ${{ secrets.GITHUB_TOKEN }}
+
+      -
+        name: output docker debug infos
+        shell: bash
+        run: |
+          set -vx
+          set +eu
+          docker buildx ls
+          docker buildx du --verbose
+          docker images --all --no-trunc
+          docker container ls --all --no-trunc --size
+          docker container ls --all --no-trunc --size --latest
       -
         name: Build and push ccache
         if: github.event_name != 'pull_request'
@@ -99,6 +111,17 @@ jobs:
             registry.gitlab.com/${{ steps.env_fix.outputs.repo_name_lc }}:build-cache
           labels: ${{ steps.meta.outputs.labels }}
       -
+        name: output docker debug infos
+        shell: bash
+        run: |
+          set -vx
+          set +eu
+          docker buildx ls
+          docker buildx du --verbose
+          docker images --all --no-trunc
+          docker container ls --all --no-trunc --size
+          docker container ls --all --no-trunc --size --latest
+      -
         name: Push ccache Docker image to Docker Hub
         if: github.event_name != 'pull_request'
         uses: nick-invision/retry@v2.6.0
@@ -122,6 +145,17 @@ jobs:
           command: |
             docker push ghcr.io/${{ steps.env_fix.outputs.repo_name_lc }}:build-cache
       -
+        name: output docker debug infos
+        shell: bash
+        run: |
+          set -vx
+          set +eu
+          docker buildx ls
+          docker buildx du --verbose
+          docker images --all --no-trunc
+          docker container ls --all --no-trunc --size
+          docker container ls --all --no-trunc --size --latest
+      -
         name: Build and prep ccache
         id: docker_build
         uses: docker/build-push-action@v2
@@ -137,6 +171,17 @@ jobs:
           push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+      -
+        name: output docker debug infos
+        shell: bash
+        run: |
+          set -vx
+          set +eu
+          docker buildx ls
+          docker buildx du --verbose
+          docker images --all --no-trunc
+          docker container ls --all --no-trunc --size
+          docker container ls --all --no-trunc --size --latest
       - 
         name: Push Docker image to GitHub Container Registry (GHCR)
         if: github.event_name != 'pull_request'
